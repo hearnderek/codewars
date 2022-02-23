@@ -7,19 +7,9 @@ func factorial(_ n: Int) -> Int {
     return n == 0 ? 1 : n * factorial(n - 1)
 }
 
-// [1], [2,3,4]
-// [1,2], [3,4]
-// [1,2,3], [4]
-// [1,2,3,4], []
-// [1,2,4], [3]
-// [1,3], [2,4]
-// [1,3,4], [2]
-// [1,4], [2,3]
-
-
 func combinatoricGroups(appendTo: [Int], chooseFrom: [Int]) -> [[Int]] {
     if chooseFrom.count == 0 {
-        return [[Int]()]
+        return []
     }
 
     totalTreeSteps+=1
@@ -48,17 +38,8 @@ func combinatoricGroups(appendTo: [Int], chooseFrom: [Int]) -> [[Int]] {
     return results
 }
 
-func firstHalfCombinatoricGroups(_ xs: [Int]) -> [[Int]] {
-    if xs.count <= 1 {
-        return [[Int]()]
-    }
-
-    // we are looking at one mirror half of the groups by only looking at the 1s tree
-    var groups = combinatoricGroups(appendTo: [xs[0]], chooseFrom: Array(xs[1..<xs.count]))
-    
-    // this gets skipped in the above function
-    groups.append([xs[0]])
-    return groups
+func combinatoricGroups(_ xs: [Int]) -> [[Int]] {
+    return combinatoricGroups(appendTo: [], chooseFrom: xs)
 }
 
 
@@ -67,23 +48,13 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
     totalSolutionAttempts = 0
     totalTreeSteps = 0
 
-    if list.count > 22 {
-        print("list too long")
-        print(list)
-        return (list, [])
-    }
 
-    print("sum list -- \(list)")
     // sum list
     let sumList = list.reduce(0, +) / 2
 
-    print("half of the possible groups")
-    // half of the possible groups
-    let groups = firstHalfCombinatoricGroups(list)
+    // Generate all possible groups
+    let groups = combinatoricGroups(list)
     
-    
-
-    print("Find optimal group")
     // Find optimal group
     var bestGroup: [Int] = []
     var bestDist: Int = sumList
@@ -99,25 +70,14 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
         }
     }
 
-    print("build matching group")
     // build matching group
     var matchingGroup = list
     for x in bestGroup {
         // remove first instance of x
-        if let i = matchingGroup.firstIndex(of: x) {
-            matchingGroup.remove(at: i)
-        }
-        else {
-            print("error \(x) not found in \(matchingGroup)")
-            print("BestGroup: \(bestGroup)")
-            print("MatchingGroup: \(matchingGroup)")
-        }
+        matchingGroup.remove(at: matchingGroup.firstIndex(of: x)!)
     }
     
-
     //print("n^2 = \(list.count * list.count) -- 2^n = \(pow(2, (Double(list.count)))) -- n! = \(factorial(list.count)) -- n^n = \(pow(Double(list.count), Double(list.count)))")
     print("for n = \(list.count) -- solutionsTried = \(totalSolutionAttempts) -- treeSteps = \(totalTreeSteps)")
-    print("return")
-    print("")
     return (bestGroup, matchingGroup)
 }
