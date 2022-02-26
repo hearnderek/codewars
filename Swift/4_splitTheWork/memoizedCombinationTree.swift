@@ -23,7 +23,6 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
     }    
     
     calculated += 1
-    var 
     var groups: [SumGroup] = []
     for i in stride(from: xs.count - 1, through: 0, by: -1) {
     //for i in 0..<xs.count {
