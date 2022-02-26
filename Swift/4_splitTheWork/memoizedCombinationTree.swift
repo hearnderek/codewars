@@ -7,12 +7,15 @@ struct SumGroup {
 /// Can I generalize the OptimizeDistance function?
 ///
 
-
 var goal: Int = 0
 var calculated = 0
+var calls = 0
 var memoizedSumGroups = [[Int]:[SumGroup]]()
 var bestDistance = 0
+
+/// The tuple represents (the flattened tree, the answer)
 func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
+    calls += 1
     // Handle all of the hypersimple cases
     let memo = memoizedSumGroups[xs]
     if memo != nil {
@@ -20,9 +23,15 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
     }    
     
     calculated += 1
+    var 
     var groups: [SumGroup] = []
-    for i in 0..<xs.count {
-        groups.append(SumGroup(sum: xs[i], distance: abs(goal - xs[i]) , group: [xs[i]]))
+    for i in stride(from: xs.count - 1, through: 0, by: -1) {
+    //for i in 0..<xs.count {
+        groups.append(SumGroup(
+            sum: xs[i], 
+            distance: abs(goal - xs[i]) , 
+            group: [xs[i]]))
+
         if i < xs.count - 1 {
             let subResult = GenerateSumGroupsOrAnswer(Array(xs[i+1..<xs.count]))
             let possibleResult = subResult.1
@@ -33,13 +42,16 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
 
             for subGroup in subGroups {
                 let sum = subGroup.sum + xs[i]
-                let group = subGroup.group + [xs[i]]
                 let distance = abs(goal - sum)
-                if distance > subGroup.distance {
-                    continue
+                if sum > goal {
+
                 }
-                let sumGroup = SumGroup(sum: sum, distance: distance, group: group)
-                if sum < goal {
+
+                if distance <= subGroup.distance && sum < goal {
+                    let sumGroup = SumGroup(
+                        sum: sum, 
+                        distance: distance, 
+                        group: subGroup.group + [xs[i]])
                     groups.append(sumGroup)
                 }
             }
@@ -79,7 +91,7 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
     //    print("\(group.sum) -- \(group.group)")
     //}
 
-    print("\(list.count) -> \(groups.count): \(calculated)")
+    print("\(list.count) -> \(groups.count): \(calculated)/\(calls)")
     
     return (list, [])
 }
