@@ -18,9 +18,18 @@ func factorial(_ n: Int) -> Int {
 
 /// Issues:
 ///
-/// make this a BFS and not a DFS
-/// The DFS mucks around deep in a path that likely will not have the answer.
-/// The answer is most likely in the middle of the path.
+/// Need to optimize for worst case...
+/// 
+/// O(2^(n+1))
+///
+/// Plan:
+/// 1. Start to Explore tree from largest child (done in bestCombinatoricGroup())
+///    - using a single child node as our head splits the tree in half.
+///    - using the largest child will get us to the goal value in less steps
+/// 2. Pass the sum down the tree to reduce summation cycles
+/// 3. Skipping when previous value is the same as current value (will produce duplicate groups)
+/// 4. Add in memoization?
+///    - 
 func bestCombinatoricGroup(appendTo: [Int], chooseFrom: [Int], lastSum: Int, lastDistance: Int, goal: Int) -> (group: [Int], dist: Int)? {
     if chooseFrom.count == 0 {
         return nil
@@ -30,12 +39,12 @@ func bestCombinatoricGroup(appendTo: [Int], chooseFrom: [Int], lastSum: Int, las
     var bestDist = lastDistance
     var best: [Int]? = nil
 
-    // TODO: make this a BFS and not a DFS
+
     for (i, x) in chooseFrom.enumerated() {
         totalSolutionAttempts+=1
         let newSum = lastSum + x
         let newDist = abs(newSum - goal)
-        if newDist >= lastDistance {
+        if newDist >= lastDistance || (i > 1 && x == chooseFrom[i-1]) {
             continue
         }        
 
@@ -115,7 +124,7 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
 
     print("Find optimal group")
     // Find optimal group
-    let bestGroup = bestCombinatoricGroup(list)
+    let bestGroup = bestCombinatoricGroup(list.sorted().reversed())
     
     print("build matching group")
     // build matching group
