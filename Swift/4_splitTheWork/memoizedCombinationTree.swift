@@ -4,32 +4,22 @@ struct SumGroup {
     let group: [Int]
 }
 
-/// Can I generalize the OptimizeDistance function?
-///
-
-var goal: Int = 0
-var calculated = 0
-var calls = 0
-var memoizedSumGroups = [[Int]:[SumGroup]]()
-var bestDistance = 0
-
-/// The tuple represents (the flattened tree, the answer)
-func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> (groupsOrderedByDistance: [SumGroup], perfectResult: [Int]?) {
-    calls += 1
-    // Handle all of the hypersimple cases
-    let memo = memoizedSumGroups[xs]
-    if memo != nil {
-        return (memoizedSumGroups[xs]!, nil)
+func GenerateSumGroupsOrAnswer(_ xs: [Int],_ goal: Int,_ memo: inout [[Int]:[SumGroup]]) -> (groupsOrderedByDistance: [SumGroup], perfectResult: [Int]?) {
+    
+    // Do we already have the memoized result?
+    let memoRet = memo[xs]
+    if memoRet != nil {
+        return (memo[xs]!, nil)
     }    
     
-    calculated += 1
+    // hashset
+    var seen = Set<Int>()
     var groups: [SumGroup] = []
-    var distanceDict = [Int:SumGroup]()
 
     //for i in stride(from: xs.count - 1, through: 0, by: -1) {
     for i in 0..<xs.count {
         if i < xs.count - 1 {
-            let subResult = GenerateSumGroupsOrAnswer(Array(xs[i+1..<xs.count]))
+            let subResult = GenerateSumGroupsOrAnswer(Array(xs[i+1..<xs.count]), goal, &memo)
             let possibleResult = subResult.1
             if possibleResult != nil {
                 return ([], possibleResult!)
@@ -45,8 +35,8 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> (groupsOrderedByDistance: [SumGro
                         sum: sum, 
                         distance: distance, 
                         group: subGroup.group + [xs[i]])
-                    if distanceDict[distance] == nil {
-                        distanceDict[distance] = sumGroup
+                    if !seen.contains(distance) {
+                        seen.insert(distance)
                         groups.append(sumGroup)
                     }
                 }
@@ -54,42 +44,32 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> (groupsOrderedByDistance: [SumGro
         }
 
         let distance = abs(goal - xs[i])
-        if distanceDict[distance] == nil {
+        if !seen.contains(distance) {
+            seen.insert(distance)
             let sumGroup = SumGroup(
                 sum: xs[i], 
                 distance: distance, 
                 group: [xs[i]])
             groups.append(sumGroup)
-            distanceDict[distance] = sumGroup
         }
     }
     
+    // Keeps optimal answer on top
     groups.sort { $0.distance < $1.distance }
-    
-
-    
-
-
-    memoizedSumGroups[xs] = groups
+    memo[xs] = groups
     return (groups, nil)
 }
 
 func FindOptimalGroup(_ xs: [Int]) -> [Int] {
     // skip first element
     if xs.count > 2 {
-        let ordered = Array(xs.sorted().reversed())
-        let largestValue = ordered[0]
-        goal = xs.reduce(0, +) / 2 - largestValue
-        bestDistance = goal
-
-        let ys = Array(ordered[1..<ordered.count])
-        let result = GenerateSumGroupsOrAnswer(ys)
+        let goal = xs.reduce(0, +) / 2
+        var memo = [[Int]:[SumGroup]]()
+        let result = GenerateSumGroupsOrAnswer(xs, goal, &memo)
         guard let perfectResult = result.perfectResult else {
-            let optimalGroup = [largestValue] + result.groupsOrderedByDistance[0].group
-            return optimalGroup
+            return result.groupsOrderedByDistance[0].group
         }
         return perfectResult
-
     }
 
 
@@ -99,7 +79,10 @@ func FindOptimalGroup(_ xs: [Int]) -> [Int] {
 }
 
 func splitlist(_ list: [Int]) -> ([Int], [Int]) {
-  
+    if list.count == 0 {
+        return ([], [])
+    }
+
     // find optimal group
     let optimalGroup = FindOptimalGroup(list)
     print("optimal group: \(optimalGroup.reduce(0, +)) -- \(optimalGroup)")
@@ -119,7 +102,6 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
 
     print("goal \(list.reduce(0, +) / 2)")
     print("optimal group: \(optimalGroup.reduce(0, +)) - vs - matchingGroup: \(matchingGroup.reduce(0, +))")
-    print("n=\(list.count): \(calculated)/\(calls)")
 
     return (optimalGroup, matchingGroup)
 }
