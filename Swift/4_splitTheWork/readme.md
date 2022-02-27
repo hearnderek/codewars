@@ -16,6 +16,7 @@ Looking at the other solutions mine is by far the longest in terms of LoC.
 /// This is a very compact and fast implementation I found in the solutions section.
 /// There were no comments, I have added them myself as an exercise in learning how this funciton works.
 /// This is limited by size of values it can handle.
+/// POSSIBLE IMPROVEMENT: Use a dictionary instead of an array to save on space
 func splitlist(_ list: [Int]) -> ([Int], [Int]) {
     // handle 0 case
     guard list != [] else { return ([], []) }
@@ -70,7 +71,7 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
             rest.append(item)
         }
     }
-    
+
     return (best, rest)
 }
 
