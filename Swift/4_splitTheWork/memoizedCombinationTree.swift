@@ -4,6 +4,7 @@ struct SumGroup {
     let group: [Int]
 }
 
+
 func GenerateSumGroupsOrAnswer(_ xs: [Int],_ goal: Int,_ memo: inout [[Int]:[SumGroup]]) -> (groupsOrderedByDistance: [SumGroup], perfectResult: [Int]?) {
     
     // Do we already have the memoized result?
@@ -16,28 +17,36 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int],_ goal: Int,_ memo: inout [[Int]:[Sum
     var seen = Set<Int>()
     var groups: [SumGroup] = []
 
+    // These values will always be replaced
+    var best: SumGroup = SumGroup(sum: 0, distance: goal + 1, group: []) 
+    var bestIndex = -1
+
     //for i in stride(from: xs.count - 1, through: 0, by: -1) {
     for i in 0..<xs.count {
-        if i < xs.count - 1 {
+        if i != xs.count - 1 {
             let subResult = GenerateSumGroupsOrAnswer(Array(xs[i+1..<xs.count]), goal, &memo)
-            let possibleResult = subResult.1
+            let possibleResult = subResult.perfectResult
             if possibleResult != nil {
                 return ([], possibleResult!)
             }
-            let subGroups = subResult.0
+            let subGroups = subResult.groupsOrderedByDistance
 
             for subGroup in subGroups {
                 let sum = subGroup.sum + xs[i]
                 let distance = abs(goal - sum)
 
                 if distance <= subGroup.distance {
-                    let sumGroup = SumGroup(
-                        sum: sum, 
-                        distance: distance, 
-                        group: subGroup.group + [xs[i]])
                     if !seen.contains(distance) {
+                        let sumGroup = SumGroup(
+                            sum: sum, 
+                            distance: distance, 
+                            group: subGroup.group + [xs[i]])
                         seen.insert(distance)
                         groups.append(sumGroup)
+                        if sumGroup.distance < best.distance {
+                            best = sumGroup
+                            bestIndex = groups.count - 1
+                        }
                     }
                 }
             }
@@ -51,11 +60,19 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int],_ goal: Int,_ memo: inout [[Int]:[Sum
                 distance: distance, 
                 group: [xs[i]])
             groups.append(sumGroup)
+            if sumGroup.distance < best.distance {
+                best = sumGroup
+                bestIndex = groups.count - 1
+            }
         }
     }
     
     // Keeps optimal answer on top
-    groups.sort { $0.distance < $1.distance }
+    if groups.count > 1 {
+        groups[bestIndex] = groups[0]
+        groups[0] = best
+    }
+
     memo[xs] = groups
     return (groups, nil)
 }
@@ -73,21 +90,25 @@ func FindOptimalGroup(_ xs: [Int]) -> [Int] {
     }
 
 
-    print("returning trival result: \([xs[0]])")
+    // print("returning trival result: \([xs[0]])")
     return  [xs[0]]
 
 }
 
 func splitlist(_ list: [Int]) -> ([Int], [Int]) {
-    if list.count == 0 {
+    if list.count == 0 || list.count > 40 {
+        print("list \(list.count): \(list)")
         return ([], [])
     }
 
-    // find optimal group
-    let optimalGroup = FindOptimalGroup(list)
-    print("optimal group: \(optimalGroup.reduce(0, +)) -- \(optimalGroup)")
+    let zeros = list.filter { $0 == 0 }
+    let nonzeros = list.filter { $0 != 0 }
 
-    var matchingGroup = list
+    // find optimal group
+    let optimalGroup = FindOptimalGroup(nonzeros)
+    // print("optimal group: \(optimalGroup.reduce(0, +)) -- \(optimalGroup)")
+
+    var matchingGroup = nonzeros
     for x in optimalGroup {
         // remove first instance of x
         if let i = matchingGroup.firstIndex(of: x) {
@@ -99,9 +120,10 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
             print("MatchingGroup: \(matchingGroup)")
         }
     }
+    matchingGroup += zeros
 
-    print("goal \(list.reduce(0, +) / 2)")
-    print("optimal group: \(optimalGroup.reduce(0, +)) - vs - matchingGroup: \(matchingGroup.reduce(0, +))")
+    // print("goal \(list.reduce(0, +) / 2)")
+    print("n:\(list.count) -- optimal group: \(optimalGroup.reduce(0, +)) - vs - matchingGroup: \(matchingGroup.reduce(0, +))")
 
     return (optimalGroup, matchingGroup)
 }

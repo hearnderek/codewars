@@ -1,141 +1,129 @@
-var totalSolutionAttempts = 0
-var totalTreeSteps = 0
-
-
-
-func factorial(_ n: Int) -> Int {
-    return n == 0 ? 1 : n * factorial(n - 1)
+struct SumGroup {
+    let sum: Int
+    let distance: Int
+    let group: [Int]
 }
 
-// [1], [2,3,4]
-// [1,2], [3,4]
-// [1,2,3], [4]
-// [1,2,3,4], []
-// [1,2,4], [3]
-// [1,3], [2,4]
-// [1,3,4], [2]
-// [1,4], [2,3]
 
-/// Issues:
-///
-/// make this a BFS and not a DFS
-/// The DFS mucks around deep in a path that likely will not have the answer.
-/// The answer is most likely in the middle of the path.
-func bestCombinatoricGroup(appendTo: [Int], chooseFrom: [Int], lastSum: Int, lastDistance: Int, goal: Int) -> (group: [Int], dist: Int)? {
-    if chooseFrom.count == 0 {
-        return nil
-    }
+func GenerateSumGroupsOrAnswer(_ xs: [Int],_ goal: Int,_ memo: inout [[Int]:[SumGroup]]) -> (groupsOrderedByDistance: [SumGroup], perfectResult: [Int]?) {
+    
+    // Do we already have the memoized result?
+    let memoRet = memo[xs]
+    if memoRet != nil {
+        return (memo[xs]!, nil)
+    }    
+    
+    // hashset
+    var seen = Set<Int>()
+    var groups: [SumGroup] = []
 
-    totalTreeSteps+=1
-    var bestDist = lastDistance
-    var best: [Int]? = nil
+    // These values will always be replaced
+    var best: SumGroup = SumGroup(sum: 0, distance: goal + 1, group: []) 
+    var bestIndex = -1
 
-    // TODO: make this a BFS and not a DFS
-    for (i, x) in chooseFrom.enumerated() {
-        totalSolutionAttempts+=1
-        let newSum = lastSum + x
-        let newDist = abs(newSum - goal)
-        if newDist >= lastDistance {
-            continue
-        }        
+    //for i in stride(from: xs.count - 1, through: 0, by: -1) {
+    for i in 0..<xs.count {
+        if i != xs.count - 1 {
+            let subResult = GenerateSumGroupsOrAnswer(Array(xs[i+1..<xs.count]), goal, &memo)
+            let possibleResult = subResult.perfectResult
+            if possibleResult != nil {
+                return ([], possibleResult!)
+            }
+            let subGroups = subResult.groupsOrderedByDistance
 
-        // concat x with appendTo
-        var newAppendTo: [Int] = []
-        for y in appendTo {
-            newAppendTo.append(y)
-        }
-        newAppendTo.append(x)
+            for subGroup in subGroups {
+                let sum = subGroup.sum + xs[i]
+                let distance = abs(goal - sum)
 
-        if newDist < bestDist {
-            bestDist = newDist
-            best = newAppendTo
-        }
-        
-        var remaining: [Int] = []
-        for y in chooseFrom[i+1..<chooseFrom.count] {
-            remaining.append(y)
-        }
-
-        // If something was returned we found an improved value
-        guard let subResult = bestCombinatoricGroup(
-                appendTo: newAppendTo, 
-                chooseFrom: remaining,
-                lastSum: newSum,
-                lastDistance: newDist,
-                goal: goal) else {
-            continue
+                if distance <= subGroup.distance {
+                    if !seen.contains(distance) {
+                        let sumGroup = SumGroup(
+                            sum: sum, 
+                            distance: distance, 
+                            group: subGroup.group + [xs[i]])
+                        seen.insert(distance)
+                        groups.append(sumGroup)
+                        if sumGroup.distance < best.distance {
+                            best = sumGroup
+                            bestIndex = groups.count - 1
+                        }
+                    }
+                }
+            }
         }
 
-        if subResult.dist < bestDist {
-            best = subResult.group
-            bestDist = subResult.dist
+        let distance = abs(goal - xs[i])
+        if !seen.contains(distance) {
+            seen.insert(distance)
+            let sumGroup = SumGroup(
+                sum: xs[i], 
+                distance: distance, 
+                group: [xs[i]])
+            groups.append(sumGroup)
+            if sumGroup.distance < best.distance {
+                best = sumGroup
+                bestIndex = groups.count - 1
+            }
         }
-    }
-
-    guard let bestResult = best else {
-        return nil
-    }
-    return (bestResult, bestDist)
-}
-
-func bestCombinatoricGroup(_ xs: [Int]) -> [Int] {
-    if xs.count <= 1 {
-        return [Int]()
-    }
-    let goal = xs.reduce(0, +) / 2
-
-    // we are looking at one mirror half of the groups by only looking at the 1s tree
-    guard let result = bestCombinatoricGroup(
-        appendTo: [xs[0]], 
-        chooseFrom: Array(xs[1..<xs.count]), 
-        lastSum: xs[0], 
-        lastDistance: abs(xs[0] - goal), 
-        goal: goal
-    ) else {
-        // We didn't find a solution -- which happens when the initial appendTo is the best case
-        return [xs[0]]
     }
     
-    // this gets skipped in the above function
-    
-    return result.group
+    // Keeps optimal answer on top
+    if groups.count > 1 {
+        groups[bestIndex] = groups[0]
+        groups[0] = best
+    }
+
+    memo[xs] = groups
+    return (groups, nil)
 }
 
+func FindOptimalGroup(_ xs: [Int]) -> [Int] {
+    // skip first element
+    if xs.count > 2 {
+        let goal = xs.reduce(0, +) / 2
+        var memo = [[Int]:[SumGroup]]()
+        let result = GenerateSumGroupsOrAnswer(xs, goal, &memo)
+        guard let perfectResult = result.perfectResult else {
+            return result.groupsOrderedByDistance[0].group
+        }
+        return perfectResult
+    }
 
+
+    // print("returning trival result: \([xs[0]])")
+    return  [xs[0]]
+
+}
 
 func splitlist(_ list: [Int]) -> ([Int], [Int]) {
-    totalSolutionAttempts = 0
-    totalTreeSteps = 0
+    if list.count == 0 || list.count > 40 {
+        print("list \(list.count): \(list)")
+        return ([], [])
+    }
 
-    // if list.count > 22 {
-    //     print("list too long")
-    //     print(list)
-    //     return (list, [])
-    // }
+    let zeros = list.filter { $0 == 0 }
+    let nonzeros = list.filter { $0 != 0 }
 
-    print("Find optimal group")
-    // Find optimal group
-    let bestGroup = bestCombinatoricGroup(list)
-    
-    print("build matching group")
-    // build matching group
-    var matchingGroup = list
-    for x in bestGroup {
+    // find optimal group
+    let optimalGroup = FindOptimalGroup(nonzeros)
+    // print("optimal group: \(optimalGroup.reduce(0, +)) -- \(optimalGroup)")
+
+    var matchingGroup = nonzeros
+    for x in optimalGroup {
         // remove first instance of x
         if let i = matchingGroup.firstIndex(of: x) {
             matchingGroup.remove(at: i)
         }
         else {
             print("error \(x) not found in \(matchingGroup)")
-            print("BestGroup: \(bestGroup)")
+            print("BestGroup: \(optimalGroup)")
             print("MatchingGroup: \(matchingGroup)")
         }
     }
-    
+    matchingGroup += zeros
 
-    //print("n^2 = \(list.count * list.count) -- 2^n = \(pow(2, (Double(list.count)))) -- n! = \(factorial(list.count)) -- n^n = \(pow(Double(list.count), Double(list.count)))")
-    print("for n = \(list.count) -- solutionsTried = \(totalSolutionAttempts) -- treeSteps = \(totalTreeSteps)")
-    print("return")
-    print("")
-    return (bestGroup, matchingGroup)
+    // print("goal \(list.reduce(0, +) / 2)")
+    print("n:\(list.count) -- optimal group: \(optimalGroup.reduce(0, +)) - vs - matchingGroup: \(matchingGroup.reduce(0, +))")
+
+    return (optimalGroup, matchingGroup)
 }
