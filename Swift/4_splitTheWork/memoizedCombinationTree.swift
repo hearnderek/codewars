@@ -14,7 +14,7 @@ var memoizedSumGroups = [[Int]:[SumGroup]]()
 var bestDistance = 0
 
 /// The tuple represents (the flattened tree, the answer)
-func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
+func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> (groupsOrderedByDistance: [SumGroup], perfectResult: [Int]?) {
     calls += 1
     // Handle all of the hypersimple cases
     let memo = memoizedSumGroups[xs]
@@ -26,8 +26,8 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
     var groups: [SumGroup] = []
     var distanceDict = [Int:SumGroup]()
 
-    for i in stride(from: xs.count - 1, through: 0, by: -1) {
-    //for i in 0..<xs.count {
+    //for i in stride(from: xs.count - 1, through: 0, by: -1) {
+    for i in 0..<xs.count {
         if i < xs.count - 1 {
             let subResult = GenerateSumGroupsOrAnswer(Array(xs[i+1..<xs.count]))
             let possibleResult = subResult.1
@@ -40,7 +40,7 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
                 let sum = subGroup.sum + xs[i]
                 let distance = abs(goal - sum)
 
-                if distance <= subGroup.distance && sum < goal {
+                if distance <= subGroup.distance {
                     let sumGroup = SumGroup(
                         sum: sum, 
                         distance: distance, 
@@ -74,42 +74,52 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
     return (groups, nil)
 }
 
-func GenerateSumGroupsTop(_ xs: [Int]) -> ([SumGroup], [Int]?) {
+func FindOptimalGroup(_ xs: [Int]) -> [Int] {
     // skip first element
     if xs.count > 2 {
         let ordered = Array(xs.sorted().reversed())
-        goal = xs.reduce(0, +) / 2 - ordered[0]
+        let largestValue = ordered[0]
+        goal = xs.reduce(0, +) / 2 - largestValue
         bestDistance = goal
 
         let ys = Array(ordered[1..<ordered.count])
-        return GenerateSumGroupsOrAnswer(ys.reversed())
+        let result = GenerateSumGroupsOrAnswer(ys)
+        guard let perfectResult = result.perfectResult else {
+            let optimalGroup = [largestValue] + result.groupsOrderedByDistance[0].group
+            return optimalGroup
+        }
+        return perfectResult
+
     }
 
-    return ([], [xs[0]])
+
+    print("returning trival result: \([xs[0]])")
+    return  [xs[0]]
 
 }
 
 func splitlist(_ list: [Int]) -> ([Int], [Int]) {
   
-    let groupResult = GenerateSumGroupsTop(list)
-    let groups = groupResult.0
-    let perfectResult = groupResult.1
-    if perfectResult != nil {
-        return (perfectResult!, [])
-    }
+    // find optimal group
+    let optimalGroup = FindOptimalGroup(list)
+    print("optimal group: \(optimalGroup.reduce(0, +)) -- \(optimalGroup)")
 
-    print("goal \(goal)")
-    print("")
-    var maxPrint = 100    
-    for group in groups {
-        print("\(group.sum) -- \(group.group)")
-        maxPrint -= 1
-        if maxPrint == 0 {
-            break
+    var matchingGroup = list
+    for x in optimalGroup {
+        // remove first instance of x
+        if let i = matchingGroup.firstIndex(of: x) {
+            matchingGroup.remove(at: i)
+        }
+        else {
+            print("error \(x) not found in \(matchingGroup)")
+            print("BestGroup: \(optimalGroup)")
+            print("MatchingGroup: \(matchingGroup)")
         }
     }
 
-    print("\(list.count) -> \(groups.count): \(calculated)/\(calls)")
-    
-    return (list, [])
+    print("goal \(list.reduce(0, +) / 2)")
+    print("optimal group: \(optimalGroup.reduce(0, +)) - vs - matchingGroup: \(matchingGroup.reduce(0, +))")
+    print("n=\(list.count): \(calculated)/\(calls)")
+
+    return (optimalGroup, matchingGroup)
 }
