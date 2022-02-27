@@ -24,13 +24,10 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
     
     calculated += 1
     var groups: [SumGroup] = []
+    var distanceDict = [Int:SumGroup]()
+
     for i in stride(from: xs.count - 1, through: 0, by: -1) {
     //for i in 0..<xs.count {
-        groups.append(SumGroup(
-            sum: xs[i], 
-            distance: abs(goal - xs[i]) , 
-            group: [xs[i]]))
-
         if i < xs.count - 1 {
             let subResult = GenerateSumGroupsOrAnswer(Array(xs[i+1..<xs.count]))
             let possibleResult = subResult.1
@@ -42,20 +39,36 @@ func GenerateSumGroupsOrAnswer(_ xs: [Int]) -> ([SumGroup], [Int]?) {
             for subGroup in subGroups {
                 let sum = subGroup.sum + xs[i]
                 let distance = abs(goal - sum)
-                if sum > goal {
-
-                }
 
                 if distance <= subGroup.distance && sum < goal {
                     let sumGroup = SumGroup(
                         sum: sum, 
                         distance: distance, 
                         group: subGroup.group + [xs[i]])
-                    groups.append(sumGroup)
+                    if distanceDict[distance] == nil {
+                        distanceDict[distance] = sumGroup
+                        groups.append(sumGroup)
+                    }
                 }
             }
         }
+
+        let distance = abs(goal - xs[i])
+        if distanceDict[distance] == nil {
+            let sumGroup = SumGroup(
+                sum: xs[i], 
+                distance: distance, 
+                group: [xs[i]])
+            groups.append(sumGroup)
+            distanceDict[distance] = sumGroup
+        }
     }
+    
+    groups.sort { $0.distance < $1.distance }
+    
+
+    
+
 
     memoizedSumGroups[xs] = groups
     return (groups, nil)
@@ -85,10 +98,16 @@ func splitlist(_ list: [Int]) -> ([Int], [Int]) {
         return (perfectResult!, [])
     }
 
-    
-    //for group in groups {
-    //    print("\(group.sum) -- \(group.group)")
-    //}
+    print("goal \(goal)")
+    print("")
+    var maxPrint = 100    
+    for group in groups {
+        print("\(group.sum) -- \(group.group)")
+        maxPrint -= 1
+        if maxPrint == 0 {
+            break
+        }
+    }
 
     print("\(list.count) -> \(groups.count): \(calculated)/\(calls)")
     
