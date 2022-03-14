@@ -1,0 +1,13 @@
+cflags = -O3
+
+rule co
+  command = clang -o $out -c $in
+
+rule cc
+  command = clang -o $out $in
+
+build ./out/hello.o: co hello.c
+build ./out/main.o: co main.c
+
+build ./out/hello: cc ./out/main.o ./out/hello.o
+
