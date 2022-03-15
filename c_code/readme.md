@@ -8,7 +8,8 @@ Even though the problems are dead simple, putting some easy c problems from code
 
 ---
 
-| id |                 TODO |
-|----|----------------------|
-|  1 | create a test runner |
-|  2 |      build all files |
+| id |   |                  TODO |
+|----|---|-----------------------|
+|  0 | X | example complete item |
+|  1 | . |  create a test runner |
+|  2 | . |       build all files |
