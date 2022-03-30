@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include "6.h"
 
 bool isPrime (int num){
 
