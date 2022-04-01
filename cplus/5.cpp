@@ -1,5 +1,4 @@
 #include "5.h"
-#include <iostream>
 
 class DirReduction
 {
@@ -11,7 +10,6 @@ public:
         if(len < 1)
             return vec;
 
-        std::cout << "Push:" << arr[0] << std::endl;
         vec.push_back(arr[0]);
         size_t ivec = 0;
 
@@ -30,7 +28,6 @@ public:
             
             // sorted into ENSW
             if((fst == 'E' && snd == 'W') || (fst == 'N' && snd == 'S')){
-                std::cout << "remove pair " << vec[ivec] << ", " << arr[i] << std::endl;
                 vec.pop_back();
                 ivec--;
                 continue;
@@ -40,7 +37,6 @@ public:
 
 add:
             vec.push_back(arr[i]);
-            std::cout << "Push:" << arr[i] << std::endl;
             ivec++;
         }
         return vec;
