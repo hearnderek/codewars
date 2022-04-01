@@ -4,6 +4,7 @@
 #include <iostream>
 #include "8.h"
 #include "6.h"
+#include "5.h"
 
 int main()
 {
@@ -61,6 +62,14 @@ int main()
     std::cout << "digital root: 7 = " << digital_root(7) << std::endl;
     std::cout << "digital root: 16 = " << digital_root(16) << std::endl;
     std::cout << "digital root: 992 = " << digital_root(992) << std::endl;
+
+
+    std::cout << "dirReduce: " << std::endl;
+    std::vector<std::string> d1 = {"NORTH", "SOUTH", "SOUTH", "EAST", "WEST", "NORTH", "WEST"};
+    auto reduceResult = dirReduce(d1);
+    for(int i = 0; i < splitStringsResult.size(); i++){
+        std::cout << reduceResult[i] << " ";
+    }
 
 
     return 0;

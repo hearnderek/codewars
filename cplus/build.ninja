@@ -9,6 +9,7 @@ rule CXXE
 
 build o/8.o: CXXO 8.cpp
 build o/6.o: CXXO 6.cpp
+build o/5.o: CXXO 5.cpp
 build o/codewars.o: CXXO main.cpp
 
-build build/codewars.exe: CXXE o/codewars.o o/8.o o/6.o
+build build/codewars.exe: CXXE o/codewars.o o/8.o o/6.o o/5.o
