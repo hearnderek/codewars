@@ -33,8 +33,6 @@ public:
                 continue;
             }
 
-            std::cout << fst << snd << std::endl;
-
 add:
             vec.push_back(arr[i]);
             ivec++;
