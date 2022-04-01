@@ -41,5 +41,18 @@ int main()
     // }
     std::cout << "isPrimeResult of 1629636223: " << isPrime(1629636223) << std::endl;
 
+
+    std::cout << "split strings: abcde" << std::endl;
+    std::vector<std::string> splitStringsResult = splitStrings("abcde");
+    for(int i = 0; i < splitStringsResult.size(); i++){
+        std::cout << splitStringsResult[i] << " ";
+    }
+
+    std::cout << "split strings: LovesPizza" << std::endl;
+    splitStringsResult = splitStrings("LovesPizza");
+    for(int i = 0; i < splitStringsResult.size(); i++){
+        std::cout << splitStringsResult[i] << " ";
+    }
+
     return 0;
 }

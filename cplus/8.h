@@ -1,6 +1,8 @@
 #ifndef EIGHT_H
 #define EIGHT_H
 
+#include <string>
+
 int summation(int num);
 
 std::string sliceString(std::string str);

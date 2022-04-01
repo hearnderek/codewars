@@ -31,3 +31,18 @@ bool isPrime (int num){
     }
     return true;
 }
+
+
+std::vector<std::string> splitStrings(const std::string &s)
+{
+    std::vector<std::string> result;
+    size_t i = 0;
+    auto len = s.length();
+    for(; i+1 < s.length(); i+=2){
+        result.push_back(s.substr(i, 2));
+    }
+    if (i < len) {
+        result.push_back(s.substr(i, 1) + "_");
+    }
+    return result;
+}
