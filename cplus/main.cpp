@@ -47,12 +47,21 @@ int main()
     for(int i = 0; i < splitStringsResult.size(); i++){
         std::cout << splitStringsResult[i] << " ";
     }
+    std::cout << std::endl;
 
     std::cout << "split strings: LovesPizza" << std::endl;
     splitStringsResult = splitStrings("LovesPizza");
     for(int i = 0; i < splitStringsResult.size(); i++){
         std::cout << splitStringsResult[i] << " ";
     }
+
+    std::cout << std::endl;
+
+
+    std::cout << "digital root: 7 = " << digital_root(7) << std::endl;
+    std::cout << "digital root: 16 = " << digital_root(16) << std::endl;
+    std::cout << "digital root: 992 = " << digital_root(992) << std::endl;
+
 
     return 0;
 }

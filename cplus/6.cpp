@@ -46,3 +46,20 @@ std::vector<std::string> splitStrings(const std::string &s)
     }
     return result;
 }
+
+int digital_root(int n)
+{
+    while (n > 9) {
+        int sum = 0;
+
+        while (n > 9) {
+            sum += n % 10;
+            n /= 10;
+        }
+        sum += n;
+
+        n = sum;
+    }
+
+    return n;
+}
